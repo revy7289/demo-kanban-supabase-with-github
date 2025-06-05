@@ -1,24 +1,18 @@
-import { components } from '@octokit/openapi-types';
-import { FormEvent, useState } from 'react';
+import { Dispatch, FormEvent, SetStateAction, useState } from 'react';
 
-import { E_Team } from '../constants/kanban';
+import { kanbanItem, supaDB } from '../types/issues';
 
-type Issue = components['schemas']['issue'];
-type newIss = Pick<Issue, 'title' | 'body' | 'assignees' | 'labels' | 'number'>;
-type Item = (Issue | newIss) & { team: E_Team };
+type SetState<T> = Dispatch<SetStateAction<T>>;
 
-export function Modal({
-  team,
-  item,
-  setModal,
-  setIssues,
-}: {
-  team: E_Team;
-  item: Item;
-  setModal: React.Dispatch<React.SetStateAction<Item | null>>;
-  setIssues: React.Dispatch<React.SetStateAction<Issue[]>>;
-}) {
+interface ModalProps {
+  item: kanbanItem;
+  setModal: SetState<kanbanItem | null>;
+  setIssues: SetState<supaDB[]>;
+}
+
+export function Modal({ item, setModal, setIssues }: ModalProps) {
   const [loading, setLoading] = useState(false);
+  console.log(item);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -80,7 +74,7 @@ export function Modal({
         onSubmit={handleSubmit}
       >
         <h1 className="bg-[#ffdbdb] p-[8px] text-[24px] font-semibold">
-          {team}
+          {item.team}
         </h1>
 
         <label className="flex w-full flex-col gap-[8px]">
@@ -102,7 +96,7 @@ export function Modal({
           ></textarea>
         </label>
 
-        {team === '전체' || team === 'FE' || team === 'BE' ? (
+        {item.team === '전체' || item.team === 'FE' || item.team === 'BE' ? (
           <button
             className="h-[36px] w-[224px] rounded-[8px] bg-[#0065FF] text-white duration-200 hover:bg-black disabled:bg-black"
             type="submit"

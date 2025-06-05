@@ -1,21 +1,22 @@
 import '@/App.css';
 
-import type { components } from '@octokit/openapi-types';
-import { User } from '@supabase/supabase-js';
+// import type { components } from '@octokit/openapi-types';
+import { RealtimePostgresChangesPayload, User } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 
 import { Modal } from '@/shared/components/modal';
 import { supabase } from '@/shared/lib/supa-client';
 
 import { E_Team } from './shared/constants/kanban';
+import { kanbanItem, supaDB } from './shared/types/issues';
 
-type Issue = components['schemas']['issue'];
-type newIss = Pick<Issue, 'title' | 'body' | 'assignees' | 'labels' | 'number'>;
-type Item = (Issue | newIss) & { team: E_Team };
+// type Issue = components['schemas']['issue'];
+// type newIss = Pick<Issue, 'title' | 'body' | 'assignees' | 'labels' | 'number'>;
+// type Item = (Issue | newIss) & { team: E_Team };
 
 export function App() {
-  const [issues, setIssues] = useState<Issue[]>([]);
-  const [modalItem, setModalItem] = useState<Item | null>(null);
+  const [issues, setIssues] = useState<supaDB[]>([]);
+  const [modalItem, setModalItem] = useState<kanbanItem | null>(null);
   const [user, setUser] = useState<User | null>(null);
 
   const fetchIssues = async () => {
@@ -63,7 +64,7 @@ export function App() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'demo-kanban' },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<supaDB>) => {
           console.log('Realtime Change:', payload);
 
           setIssues((prev) => {
@@ -73,11 +74,11 @@ export function App() {
 
               case 'UPDATE':
                 return prev.map((item) =>
-                  item.id === payload.new.id ? payload.new : item
+                  item.sb_id === payload.new.sb_id ? payload.new : item
                 );
 
               case 'DELETE':
-                return prev.filter((item) => item.id !== payload.old.id);
+                return prev.filter((item) => item.sb_id !== payload.old.sb_id);
 
               default:
                 return prev;
@@ -145,7 +146,6 @@ export function App() {
 
               {modalItem?.team === team && (
                 <Modal
-                  team={team}
                   item={modalItem}
                   setModal={setModalItem}
                   setIssues={setIssues}
