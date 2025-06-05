@@ -49,10 +49,6 @@ export function App() {
   const useOAuth = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'github',
-      options: {
-        redirectTo:
-          'https://demo-kanban-supabase-with-github.vercel.app/auth/callback',
-      },
     });
   };
 
