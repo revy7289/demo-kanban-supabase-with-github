@@ -49,6 +49,9 @@ export function App() {
   const useOAuth = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'github',
+      options: {
+        redirectTo: 'https://xycjubkmnosvnkfrslxu.supabase.co/auth/v1/callback',
+      },
     });
   };
 
