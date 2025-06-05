@@ -1,6 +1,7 @@
 import '@/App.css';
 
 import type { components } from '@octokit/openapi-types';
+import { User } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 
 import { Modal } from '@/shared/components/modal';
@@ -12,7 +13,7 @@ type newIss = Pick<Issue, 'title' | 'body' | 'assignees' | 'labels' | 'number'>;
 export function App() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [modalItem, setModalItem] = useState<newIss | null>(null);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
 
   const fetchIssues = async () => {
     const { data, error } = await supabase

@@ -2,6 +2,10 @@
 # 📝 Nettee Kanban
 ---
 
+<a href="https://github.com/">
+   <div>Nettee!!!</div>
+</a>
+
 ### 📢 소개
 
 Nettee 팀의 생산성과 협업 효율을 높이기 위한 실사용 목적의 칸반 보드입니다.🚀
