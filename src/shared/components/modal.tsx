@@ -1,16 +1,21 @@
 import { components } from '@octokit/openapi-types';
 import { FormEvent, useState } from 'react';
 
+import { E_Team } from '../constants/kanban';
+
 type Issue = components['schemas']['issue'];
 type newIss = Pick<Issue, 'title' | 'body' | 'assignees' | 'labels' | 'number'>;
+type Item = (Issue | newIss) & { team: E_Team };
 
 export function Modal({
+  team,
   item,
   setModal,
   setIssues,
 }: {
-  item: Issue | newIss;
-  setModal: React.Dispatch<React.SetStateAction<newIss | null>>;
+  team: E_Team;
+  item: Item;
+  setModal: React.Dispatch<React.SetStateAction<Item | null>>;
   setIssues: React.Dispatch<React.SetStateAction<Issue[]>>;
 }) {
   const [loading, setLoading] = useState(false);
@@ -74,6 +79,10 @@ export function Modal({
         className="flex h-[520px] w-[800px] flex-col gap-[20px] rounded-[8px] bg-white p-[20px]"
         onSubmit={handleSubmit}
       >
+        <h1 className="bg-[#ffdbdb] p-[8px] text-[24px] font-semibold">
+          {team}
+        </h1>
+
         <label className="flex w-full flex-col gap-[8px]">
           <p>제목</p>
           <input
@@ -93,13 +102,15 @@ export function Modal({
           ></textarea>
         </label>
 
-        <button
-          className="h-[36px] w-[224px] rounded-[8px] bg-[#0065FF] text-white duration-200 hover:bg-black disabled:bg-black"
-          type="submit"
-          disabled={loading}
-        >
-          {loading ? '처리 중...' : '테스트'}
-        </button>
+        {team === '전체' || team === 'FE' || team === 'BE' ? (
+          <button
+            className="h-[36px] w-[224px] rounded-[8px] bg-[#0065FF] text-white duration-200 hover:bg-black disabled:bg-black"
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? '처리 중...' : '테스트'}
+          </button>
+        ) : null}
       </form>
     </div>
   );

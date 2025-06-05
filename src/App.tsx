@@ -7,12 +7,15 @@ import { useEffect, useState } from 'react';
 import { Modal } from '@/shared/components/modal';
 import { supabase } from '@/shared/lib/supa-client';
 
+import { E_Team } from './shared/constants/kanban';
+
 type Issue = components['schemas']['issue'];
 type newIss = Pick<Issue, 'title' | 'body' | 'assignees' | 'labels' | 'number'>;
+type Item = (Issue | newIss) & { team: E_Team };
 
 export function App() {
   const [issues, setIssues] = useState<Issue[]>([]);
-  const [modalItem, setModalItem] = useState<newIss | null>(null);
+  const [modalItem, setModalItem] = useState<Item | null>(null);
   const [user, setUser] = useState<User | null>(null);
 
   const fetchIssues = async () => {
@@ -95,51 +98,63 @@ export function App() {
     openChannel();
   }, []);
 
-  const createIssue = () => {
+  const createIssue = (team: E_Team) => () => {
     setModalItem({
       title: '',
       body: '',
       assignees: [],
       labels: [],
       number: 0,
+      team,
     });
   };
 
+  const teamList = Object.values(E_Team);
+
   return (
-    <div className="flex flex-col items-center gap-[10px] p-[20px]">
-      {user === null ? (
-        <button onClick={useOAuth}>로그인</button>
-      ) : (
-        <>
-          <p>
-            Welcome, {user.user_metadata?.user_name || user.user_metadata?.name}
-          </p>
-          <button onClick={signOut}>로그아웃</button>
-          <button onClick={createIssue}>생성 테스트</button>
-          {/* <button onClick={getIssues}>페치 테스트</button> */}
+    <>
+      {teamList.map((team) => (
+        <div
+          key={team + 'kanban'}
+          className="flex flex-col items-center gap-[10px] p-[20px]"
+        >
+          {user === null ? (
+            <button onClick={useOAuth}>로그인</button>
+          ) : (
+            <>
+              <h1>{team}</h1>
+              <p>
+                Welcome,{' '}
+                {user.user_metadata?.user_name || user.user_metadata?.name}
+              </p>
+              <button onClick={signOut}>로그아웃</button>
+              <button onClick={createIssue(team)}>생성 테스트</button>
 
-          <ul className="flex flex-col gap-[8px] rounded-[8px] bg-[#dbdbdb] px-[50px] py-[20px]">
-            {issues.map((item) => (
-              <li
-                key={item.id}
-                className="flex gap-[8px] rounded-[4px] bg-[#f5f5f5] px-[8px] py-[4px]"
-                onClick={() => setModalItem(item)}
-              >
-                <p className="font-semibold">#{item.number}</p>
-                <p>{item.title}</p>
-              </li>
-            ))}
-          </ul>
+              <ul className="flex flex-col gap-[8px] rounded-[8px] bg-[#dbdbdb] px-[50px] py-[20px]">
+                {issues.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex gap-[8px] rounded-[4px] bg-[#f5f5f5] px-[8px] py-[4px]"
+                    onClick={() => setModalItem({ ...item, team })}
+                  >
+                    <p className="font-semibold">#{item.number}</p>
+                    <p>{item.title}</p>
+                  </li>
+                ))}
+              </ul>
 
-          {modalItem && (
-            <Modal
-              item={modalItem}
-              setModal={setModalItem}
-              setIssues={setIssues}
-            />
+              {modalItem?.team === team && (
+                <Modal
+                  team={team}
+                  item={modalItem}
+                  setModal={setModalItem}
+                  setIssues={setIssues}
+                />
+              )}
+            </>
           )}
-        </>
-      )}
-    </div>
+        </div>
+      ))}
+    </>
   );
 }
