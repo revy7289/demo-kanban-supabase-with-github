@@ -50,7 +50,7 @@ export function App() {
     await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
-        redirectTo: 'https://xycjubkmnosvnkfrslxu.supabase.co/auth/v1/callback',
+        redirectTo: 'https://demo-kanban-supabase-with-github.vercel.app/',
       },
     });
   };
