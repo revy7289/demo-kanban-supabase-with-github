@@ -1,6 +1,5 @@
 import '@/App.css';
 
-// import type { components } from '@octokit/openapi-types';
 import { RealtimePostgresChangesPayload, User } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 
@@ -10,14 +9,11 @@ import { supabase } from '@/shared/lib/supa-client';
 import { E_Team } from './shared/constants/kanban';
 import { kanbanItem, supaDB } from './shared/types/issues';
 
-// type Issue = components['schemas']['issue'];
-// type newIss = Pick<Issue, 'title' | 'body' | 'assignees' | 'labels' | 'number'>;
-// type Item = (Issue | newIss) & { team: E_Team };
-
 export function App() {
   const [issues, setIssues] = useState<supaDB[]>([]);
   const [modalItem, setModalItem] = useState<kanbanItem | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | undefined>('');
 
   const fetchIssues = async () => {
     const { data, error } = await supabase
@@ -33,17 +29,20 @@ export function App() {
 
   const fetchUser = async () => {
     const { data: session } = await supabase.auth.getSession();
+    const accessToken = session.session?.access_token;
+
+    if (!accessToken) return console.error('토큰이 없습니다');
 
     const {
       data: { user },
       error,
-    } = await supabase.auth.getUser(session.session?.access_token);
+    } = await supabase.auth.getUser(accessToken);
 
-    if (error) return console.error('로그인 해주세요');
+    if (error || !user) return console.error('로그인 해주세요');
     console.log(user);
-    // console.log(session.session?.access_token);
 
     setUser(user);
+    setToken(accessToken);
   };
 
   const useOAuth = async () => {
@@ -103,7 +102,7 @@ export function App() {
     setModalItem({
       title: '',
       body: '',
-      assignees: [],
+      assignees: ['revy7289', 'Seono-Na'],
       labels: [],
       number: 0,
       team,
@@ -147,6 +146,7 @@ export function App() {
               {modalItem?.team === team && (
                 <Modal
                   item={modalItem}
+                  token={token}
                   setModal={setModalItem}
                   setIssues={setIssues}
                 />

@@ -6,11 +6,12 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 
 interface ModalProps {
   item: kanbanItem;
+  token: string | undefined;
   setModal: SetState<kanbanItem | null>;
   setIssues: SetState<supaDB[]>;
 }
 
-export function Modal({ item, setModal, setIssues }: ModalProps) {
+export function Modal({ item, token, setModal, setIssues }: ModalProps) {
   const [loading, setLoading] = useState(false);
   console.log(item);
 
@@ -30,6 +31,7 @@ export function Modal({ item, setModal, setIssues }: ModalProps) {
       issue: {
         title: formData.get('title'),
         body: formData.get('body'),
+        assignees: ['revy7289', 'Seono-Na'],
       },
     };
 
@@ -38,7 +40,10 @@ export function Modal({ item, setModal, setIssues }: ModalProps) {
         'https://xycjubkmnosvnkfrslxu.supabase.co/functions/v1/github-webhook',
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify(payload),
         }
       );
