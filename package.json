@@ -13,6 +13,9 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@blocknote/core": "^0.31.2",
+    "@blocknote/react": "^0.31.2",
+    "@blocknote/shadcn": "^0.31.2",
     "@octokit/openapi-types": "^25.0.0",
     "@radix-ui/react-slot": "^1.2.0",
     "@supabase/supabase-js": "^2.49.4",

@@ -1,11 +1,11 @@
 import '@/App.css';
 
-import { RealtimePostgresChangesPayload, User } from '@supabase/supabase-js';
-import { useEffect, useState } from 'react';
+import { User } from '@supabase/supabase-js';
+import { useState } from 'react';
 
-import { Modal } from '@/shared/components/modal';
 import { supabase } from '@/shared/lib/supa-client';
 
+import { Publish } from './shared/components/publish';
 import { E_Team } from './shared/constants/kanban';
 import { kanbanItem, supaDB } from './shared/types/issues';
 
@@ -19,7 +19,7 @@ export function App() {
     const { data, error } = await supabase
       .from('demo-kanban')
       .select('*')
-      .order('number', { ascending: false });
+      .order('updated_at', { ascending: false });
 
     if (error) return console.error('이슈 가져오기 실패');
     console.log(data);
@@ -57,46 +57,48 @@ export function App() {
     setUser(null);
   };
 
-  const openChannel = () => {
-    const channel = supabase
-      .channel('realtime-kanban')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'demo-kanban' },
-        (payload: RealtimePostgresChangesPayload<supaDB>) => {
-          console.log('Realtime Change:', payload);
+  // const openChannel = () => {
+  //   const channel = supabase
+  //     .channel('realtime-kanban')
+  //     .on(
+  //       'postgres_changes',
+  //       { event: '*', schema: 'public', table: 'demo-kanban' },
+  //       (payload: RealtimePostgresChangesPayload<supaDB>) => {
+  //         console.log('Realtime Change:', payload);
 
-          setIssues((prev) => {
-            switch (payload.eventType) {
-              case 'INSERT':
-                return [...prev, payload.new];
+  //         setIssues((prev) => {
+  //           switch (payload.eventType) {
+  //             case 'INSERT':
+  //               return [...prev, payload.new];
 
-              case 'UPDATE':
-                return prev.map((item) =>
-                  item.sb_id === payload.new.sb_id ? payload.new : item
-                );
+  //             case 'UPDATE':
+  //               const updated = payload.new;
+  //               const others = prev.filter(
+  //                 (item) => item.sb_id !== updated.sb_id
+  //               );
+  //               return [updated, ...others];
 
-              case 'DELETE':
-                return prev.filter((item) => item.sb_id !== payload.old.sb_id);
+  //             case 'DELETE':
+  //               return prev.filter((item) => item.sb_id !== payload.old.sb_id);
 
-              default:
-                return prev;
-            }
-          });
-        }
-      )
-      .subscribe();
+  //             default:
+  //               return prev;
+  //           }
+  //         });
+  //       }
+  //     )
+  //     .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  };
+  //   return () => {
+  //     supabase.removeChannel(channel);
+  //   };
+  // };
 
-  useEffect(() => {
-    fetchUser();
-    fetchIssues();
-    openChannel();
-  }, []);
+  // useEffect(() => {
+  //   // fetchUser();
+  //   // fetchIssues();
+  //   openChannel();
+  // }, []);
 
   const createIssue = (team: E_Team) => () => {
     setModalItem({
@@ -113,7 +115,8 @@ export function App() {
 
   return (
     <>
-      {teamList.map((team) => (
+      <Publish />
+      {/* {teamList.map((team) => (
         <div
           key={team + 'kanban'}
           className="flex flex-col items-center gap-[10px] p-[20px]"
@@ -154,7 +157,7 @@ export function App() {
             </>
           )}
         </div>
-      ))}
+      ))} */}
     </>
   );
 }

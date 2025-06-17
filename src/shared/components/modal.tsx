@@ -13,7 +13,7 @@ interface ModalProps {
 
 export function Modal({ item, token, setModal, setIssues }: ModalProps) {
   const [loading, setLoading] = useState(false);
-  console.log(item);
+  console.log(token);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,24 +25,25 @@ export function Modal({ item, token, setModal, setIssues }: ModalProps) {
     const payload = {
       owner: 'revy7289',
       repo: 'demo-kanban-supabase-with-github',
-      idx: isNew ? '' : item.number,
+      issue_number: isNew ? '' : item.number,
 
       action: isNew ? 'create' : 'update',
       issue: {
         title: formData.get('title'),
         body: formData.get('body'),
-        assignees: ['revy7289', 'Seono-Na'],
+        assignees: ['revy7289'],
+        labels: [],
       },
     };
 
     try {
       const response = await fetch(
-        'https://xycjubkmnosvnkfrslxu.supabase.co/functions/v1/github-webhook',
+        'https://xycjubkmnosvnkfrslxu.supabase.co/functions/v1/kanban-function',
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
+            'x-github-event': 'issues',
           },
           body: JSON.stringify(payload),
         }
@@ -51,15 +52,22 @@ export function Modal({ item, token, setModal, setIssues }: ModalProps) {
       const issue = await response.json();
       console.log(issue);
 
-      setIssues((prev) =>
-        isNew
-          ? [issue.data, ...prev]
-          : prev.map((item) =>
-              item.number === issue.data.number
-                ? { ...item, ...issue.data }
-                : item
-            )
-      );
+      setIssues((prev) => {
+        if (isNew) return [issue.data, ...prev];
+
+        const updateList = prev.map((item) =>
+          item.number === issue.data.number ? { ...issue.data, ...item } : item
+        );
+
+        const target = updateList.find(
+          (item) => item.number === issue.data.number
+        );
+        const other = updateList.filter(
+          (item) => item.number !== issue.data.number
+        );
+
+        return [target, ...other];
+      });
 
       setModal(null);
     } catch (error) {
